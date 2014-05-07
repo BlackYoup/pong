@@ -33,7 +33,7 @@ function initEvents(){
 }
 
 function registerUser(val){
-	console.log(val + ' joined');
+	socket.user.pseudo = val;
 	return Promise.of();
 }
 
@@ -77,15 +77,17 @@ function initChatEvents(){
 
 	inputMessage.asEventStream('keyup').filter(function(e){
 		return e.keyCode === 13;
-	}).merge($('#sendMessage').asEventStream('click')).filter(function(x){
-		return inputMessage.val().trim().length > 0;
+	}).merge($('#sendMessage').asEventStream('click')).map(function(){
+		return inputMessage.val().trim();
+	}).filter(function(message){
+		return message.length > 0;
 	}).onValue(function(message){
-		sendMessage(message);
+		socket.emit(message);
 	});
-}
 
-function sendMessage(message){
-	// send message
+	socket.init().onChatMessage = function(message){
+		console.log(message);
+	};
 }
 
 $(document).ready(function(){
