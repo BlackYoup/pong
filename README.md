@@ -6,6 +6,7 @@ A javascript pong game with baconjs, reactjs and nodejs
 You first need to build the ReactJS file :
 	
 	npm install -g react-tools
+	jsx --watch public/javascripts/src/ public/javascripts/build/
 
 Then, you can launch the node server :
 

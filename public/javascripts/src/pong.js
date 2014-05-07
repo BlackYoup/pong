@@ -5,35 +5,87 @@ function initUI(){
 	var LoginForm = React.createClass({
 		render: function(){
 			return (
-				<div id="login">
+				<div>
 					<input type="text" id="username" />
 					<input type="submit" id="submitAuth" />
-	        	</div>
-	        )
+				</div>
+	        );
 		}
 	});
 
-	var GlobalContainer = React.createClass({
+	React.renderComponent(<LoginForm />, document.getElementById('login'));
+}
+
+function initEvents(){
+
+	var usernameInput = $('#username');
+	var validate = usernameInput.asEventStream('keydown').filter(function(e){
+		return e.keyCode === 13;
+	}).merge($('#submitAuth').asEventStream('click')).filter(function(){
+		return usernameInput.val().trim().length > 0;
+	});
+
+	validate.onValue(function(){
+		registerUser(usernameInput.val()).chain(function(){
+			initGameUI();
+		});
+	})
+}
+
+function registerUser(val){
+	console.log(val + ' joined');
+	return Promise.of();
+}
+
+function initGameUI(){
+	var GamePlateform = React.createClass({
 		render: function(){
 			return (
-				<LoginForm />
+				<div id="gamePlateform">
+					Game
+				</div>
 			);
 		}
 	});
 
-	React.renderComponent(<GlobalContainer />, document.body);
+	var Chat = React.createClass({
+		render: function(){
+			return (
+				<div>
+					<div id="chatMessages"></div>
+					<div id="chatWrite">
+						<input type="text" id="messageText" /><input type="button" value="Send" id="sendMessage"/>
+					</div>
+				</div>
+			)
+		}
+	});
+
+	React.renderComponent(<GamePlateform />, document.getElementById('pong'));
+	React.renderComponent(<Chat />, document.getElementById('chat'));
+	$('#chat, #pong').css('display', 'block');
+	$('#login').css('display', 'none');
+	initChatEvents();
 }
 
-function initEvents(){
-	$('#submitAuth').asEventStream('click').map(function(e){
-		return $('#username').val();
-	}).onValue(function(val){
-		registerUser(val);
+function initGameEvents(){
+
+}
+
+function initChatEvents(){
+	var inputMessage = $('#messageText');
+
+	inputMessage.asEventStream('keyup').filter(function(e){
+		return e.keyCode === 13;
+	}).merge($('#sendMessage').asEventStream('click')).filter(function(x){
+		return inputMessage.val().trim().length > 0;
+	}).onValue(function(message){
+		sendMessage(message);
 	});
 }
 
-function registerUser(val){
-	console.log(val);
+function sendMessage(message){
+	// send message
 }
 
 $(document).ready(function(){
