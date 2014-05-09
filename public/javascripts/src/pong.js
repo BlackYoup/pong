@@ -1,7 +1,6 @@
 /** @jsx React.DOM */
 
 function initUI(){
-
 	var LoginForm = React.createClass({
 		render: function(){
 			return (
@@ -48,46 +47,14 @@ function initGameUI(){
 		}
 	});
 
-	var Chat = React.createClass({
-		render: function(){
-			return (
-				<div>
-					<div id="chatMessages"></div>
-					<div id="chatWrite">
-						<input type="text" id="messageText" /><input type="button" value="Send" id="sendMessage"/>
-					</div>
-				</div>
-			)
-		}
-	});
-
 	React.renderComponent(<GamePlateform />, document.getElementById('pong'));
-	React.renderComponent(<Chat />, document.getElementById('chat'));
 	$('#chat, #pong').css('display', 'block');
 	$('#login').css('display', 'none');
-	initChatEvents();
+	initChat();
 }
 
 function initGameEvents(){
 
-}
-
-function initChatEvents(){
-	var inputMessage = $('#messageText');
-
-	inputMessage.asEventStream('keyup').filter(function(e){
-		return e.keyCode === 13;
-	}).merge($('#sendMessage').asEventStream('click')).map(function(){
-		return inputMessage.val().trim();
-	}).filter(function(message){
-		return message.length > 0;
-	}).onValue(function(message){
-		socket.emit(message);
-	});
-
-	socket.init().onChatMessage = function(message){
-		console.log(message);
-	};
 }
 
 $(document).ready(function(){

@@ -14,13 +14,30 @@
 	position: absolute;
 	border: 1px solid black;
 	width: 300px;
-	height: auto;
-	min-height: 100px;
+	height: 300px;
 	top: 20px;
 	right: 20px;
 	#chatWrite{
 		position: absolute;
 		bottom: 5px;
 		left: 5px;
+		height: 30px;
+	}
+	.messageContainer{
+		padding: 5px;
+		height: 250px;
+		overflow: auto;
+	}
+	.chatItem{
+		display: block;
+		.messagePseudo, .messageContent{
+			display: inline-block;
+			.messagePseudo__pseudo{
+				font-weight: bold;
+			}
+		}
+		.messageContent{
+			margin-left: 5px;
+		}
 	}
 }

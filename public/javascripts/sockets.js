@@ -30,16 +30,26 @@ $(document).ready(function(){
 			this.socket.on('chat_message', function(content){
 				self.onChatMessage(content);
 			});
+			this.socket.on('chat_joined', function(message){
+				self.onChatMessage(message);
+			});
+			this.socket.on('chat_leave', function(message){
+				self.onChatMessage(message);
+			});
 			return this;
+		};
+
+		this.registerMe = function(){
+			if(this.user.pseudo){
+				this.joinChat();
+			}
 		};
 
 		this.init = function(){
-			this.connect().socketEvents().joinChat();
+			this.connect().socketEvents();
 			return this;
 		};
-
-
 	}
 
-	window.socket = new SocketIO();
+	window.socket = new SocketIO().init();
 });

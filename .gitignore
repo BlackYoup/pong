@@ -2,3 +2,4 @@
 *.sublime-workspace
 node_modules/
 /public/css/style.css
+/public/javascripts/lib/react.js
