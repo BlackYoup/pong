@@ -88,19 +88,18 @@ function Pong(){
 	};
 
 	this.updateLines = function(status){
-		console.log('kk')
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		if(status === 'up'){
 			_.each(this.gameLines, function(obj, key){
 				obj.pos.start -= 20;
 				obj.pos.stop -= 20;
-				obj.update();
+				obj.update(status);
 			});
 		} else if(status === 'down'){
 			_.each(this.gameLines, function(obj, key){
 				obj.pos.start += 20;
 				obj.pos.stop += 20;
-				obj.update();
+				obj.update(status);
 			});
 		}
 	};
@@ -115,6 +114,16 @@ function Pong(){
 		});
 	};
 
+	this.updateChecks = function(obj){
+		if(obj.pos.start < 0){
+			return false;
+		} else if(obj.pos.stop > this.canvas.height){
+			return false;
+		} else{
+			return true;
+		}
+	};
+
 	this.init = function(){
 		this.initUI();
 		this.initEvents();
@@ -125,11 +134,23 @@ function Pong(){
 		this.lineHeight = 50;
 		this.pos = {
 			start: (self.canvas.height / 2) - (this.lineHeight / 2),
-			stop: (self.canvas.height / 2) + this.lineHeight,
+			stop: (self.canvas.height / 2) - (this.lineHeight / 2) + this.lineHeight,
 			fromLeft: fromLeft
 		};
+		this.currentUpdate = null;
 
-		this.update = function(){
+		this.update = function(status){
+			this.currentUpdate = status;
+			if(!self.updateChecks(this) && this.currentUpdate){
+				if(this.currentUpdate === 'up'){
+					this.pos.start = 0;
+					this.pos.stop = this.lineHeight;
+				} else if(this.currentUpdate === 'down'){
+					this.pos.start = self.canvas.height - this.lineHeight;
+					this.pos.stop = self.canvas.height;
+				}
+				this.currentUpdate = null;
+			}
 			self.createLine(this.pos);
 		};
 
