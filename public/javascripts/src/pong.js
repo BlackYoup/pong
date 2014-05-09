@@ -37,6 +37,7 @@ function Pong(){
 		validate.onValue(function(){
 			self.registerUser(usernameInput.val()).chain(function(pseudo){
 				self.initGameUI();
+				initChat();
 			});
 		});
 	};
@@ -64,7 +65,6 @@ function Pong(){
 		React.renderComponent(<GamePlateform />, document.getElementById('pong'));
 		$('#chat, #pong').css('display', 'block');
 		$('#login').css('display', 'none');
-		initChat();
 		this.initCanvas();
 	};
 
@@ -161,6 +161,9 @@ function Pong(){
 
 	this.endGame = function(looser){
 		alert(this.gameLines[looser].pseudo + ' lost the game');
+		if(confirm('Play again ?')){
+			self.initGameUI();
+		}
 	};
 
 	this.init = function(){
