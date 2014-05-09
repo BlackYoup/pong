@@ -41,7 +41,10 @@ function initGameUI(){
 		render: function(){
 			return (
 				<div id="gamePlateform">
-					Game
+					<canvas width="500" height="500" id="pongCanvas">
+						{ "Your browser don't support canvas, please chose one from : "}
+						<a href="http://browsehappy.com/">"http://browsehappy.com/"</a>
+					</canvas>
 				</div>
 			);
 		}
@@ -51,10 +54,33 @@ function initGameUI(){
 	$('#chat, #pong').css('display', 'block');
 	$('#login').css('display', 'none');
 	initChat();
+	initCanvas();
 }
 
-function initGameEvents(){
+function initCanvas(){
+	var canvas = document.getElementById('pongCanvas');
+	if(!canvas){
+		alert('Can\'t get the canvas');
+	}
+	var context = canvas.getContext('2d');
+	if(!context){
+		alert('Can\'t get canvas\'s context');
+	}
 
+	initBawl(context, canvas);
+}
+
+function initBawl(context, canvas){
+	var lineHeight = 100,
+		middleStart = (canvas.height / 2) - (lineHeight / 2),
+		middleStop = (canvas.height / 2) + (lineHeight / 2);
+
+	context.beginPath();
+	context.moveTo(10, middleStart);
+	context.lineTo(10, middleStop);
+	context.stroke();
+	context.lineWidth = 50;
+	context.closePath();
 }
 
 $(document).ready(function(){
