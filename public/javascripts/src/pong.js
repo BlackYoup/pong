@@ -4,6 +4,7 @@ function Pong(){
 	this.gameLines = null;
 	this.canvas = null;
 	this.context = null;
+	this.ball = null;
 
 	this.initUI = function(){
 		var LoginForm = React.createClass({
@@ -45,7 +46,7 @@ function Pong(){
 			render: function(){
 				return (
 					<div id="gamePlateform">
-						<canvas width="500" height="500" id="pongCanvas">
+						<canvas width="700" height="500" id="pongCanvas">
 							{ "Your browser don't support canvas, please chose one from : "}
 							<a href="http://browsehappy.com/">"http://browsehappy.com/"</a>
 						</canvas>
@@ -76,6 +77,7 @@ function Pong(){
 			'right': new Line(490).init()
 		};
 		this.wireLinesEvent();
+		this.ball = new Ball().init();
 	};
 
 	this.createLine = function(pos){
@@ -124,6 +126,13 @@ function Pong(){
 		}
 	};
 
+	this.createBall = function(pos){
+		this.context.beginPath();
+		this.context.arc(pos.x, pos.y, pos.radius, 0, Math.PI*2);
+		this.context.fill();
+		this.context.closePath();
+	};
+
 	this.init = function(){
 		this.initUI();
 		this.initEvents();
@@ -156,6 +165,48 @@ function Pong(){
 
 		this.init = function(){
 			self.createLine(this.pos);
+			return this;
+		};
+	}
+
+	function Ball(){
+		var ball = this;
+		this.radius = 5;
+		this.pos = {
+			x: (self.canvas.width / 2),
+			y: (self.canvas.height / 2),
+			radius: this.radius
+		};
+		this.refreshInterval = null;
+		this.speed = {
+			x: 7,
+			y: 7
+		};
+
+		this.startAnimate = function(){
+			this.refreshInterval = setInterval(ball.animate, 1000/40)
+		};
+
+		this.animate = function(){
+			if(ball.pos.x + (ball.radius / 2) >= self.canvas.width || ball.pos.x <= (0 + (ball.radius / 2))){
+				ball.speed.x *= -1;
+			}
+			if(ball.pos.y + (ball.radius / 2) >= self.canvas.height || ball.pos.y <= (0 + (ball.radius / 2))){
+				ball.speed.y *= -1;
+			}
+			ball.pos.x += ball.speed.x;
+			ball.pos.y += ball.speed.y;
+			ball.update();
+		};
+
+		this.update = function(){
+			self.context.clearRect(0, 0, self.canvas.width, self.canvas.height);
+			self.createBall(this.pos);
+		};
+
+		this.init = function(){
+			self.createBall(this.pos);
+			this.startAnimate();
 			return this;
 		};
 	}
