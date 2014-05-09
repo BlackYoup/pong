@@ -93,14 +93,14 @@ function Pong(){
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		if(status === 'up'){
 			_.each(this.gameLines, function(obj, key){
-				obj.pos.start -= 20;
-				obj.pos.stop -= 20;
+				obj.pos.start -= 40;
+				obj.pos.stop -= 40;
 				obj.update(status);
 			});
 		} else if(status === 'down'){
 			_.each(this.gameLines, function(obj, key){
-				obj.pos.start += 20;
-				obj.pos.stop += 20;
+				obj.pos.start += 40;
+				obj.pos.stop += 40;
 				obj.update(status);
 			});
 		} else{
@@ -145,7 +145,7 @@ function Pong(){
 	};
 
 	function Line(fromLeft){
-		this.lineHeight = 50;
+		this.lineHeight = 100;
 		this.pos = {
 			start: (self.canvas.height / 2) - (this.lineHeight / 2),
 			stop: (self.canvas.height / 2) - (this.lineHeight / 2) + this.lineHeight,
@@ -184,8 +184,8 @@ function Pong(){
 		};
 		this.refreshInterval = null;
 		this.speed = {
-			x: 7,
-			y: 7
+			x: -7,
+			y: -7
 		};
 
 		this.startAnimate = function(){
@@ -193,12 +193,21 @@ function Pong(){
 		};
 
 		this.animate = function(){
+			var barsPositions = _.map(self.gameLines, function(obj){
+				return obj.pos;
+			});
+			_.each(barsPositions, function(obj){
+				if(ball.pos.y >= obj.start && ball.pos.y <= obj.stop && ball.pos.x < (obj.fromLeft + 5) && ball.pos.x > (obj.fromLeft - 5)){
+					ball.speed.x *= -1;
+				}
+			});
 			if(ball.pos.x + (ball.radius / 2) >= self.canvas.width || ball.pos.x <= (0 + (ball.radius / 2))){
-				ball.speed.x *= -1;
+				ball.kill();
 			}
 			if(ball.pos.y + (ball.radius / 2) >= self.canvas.height || ball.pos.y <= (0 + (ball.radius / 2))){
 				ball.speed.y *= -1;
 			}
+
 			ball.pos.x += ball.speed.x;
 			ball.pos.y += ball.speed.y;
 			ball.update();
@@ -211,6 +220,10 @@ function Pong(){
 
 		this.outUpdate = function(){
 			self.createBall(this.pos);
+		};
+
+		this.kill = function(){
+			clearInterval(ball.refreshInterval);
 		};
 
 		this.init = function(){
