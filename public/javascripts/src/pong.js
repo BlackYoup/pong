@@ -7,6 +7,9 @@ function Pong(){
 	this.ball = null;
 	this.down = false;
 	this.downInterval = null;
+	this.user = {
+		pseudo: null
+	};
 
 	this.initUI = function(){
 		var LoginForm = React.createClass({
@@ -32,18 +35,20 @@ function Pong(){
 		});
 
 		validate.onValue(function(){
-			self.registerUser(usernameInput.val()).chain(function(){
+			self.registerUser(usernameInput.val()).chain(function(pseudo){
 				self.initGameUI();
 			});
 		});
 	};
 
 	this.registerUser = function(val){
+		val = val.trim();
 		socket.user.pseudo = val;
+		this.user.pseudo = val;
 		return Promise.of();
 	};
 
-	this.initGameUI = function(){
+	this.initGameUI = function(pseudo){
 		var GamePlateform = React.createClass({
 			render: function(){
 				return (
@@ -75,8 +80,8 @@ function Pong(){
 		this.context.clearRect(0, 0, self.canvas.width, self.canvas.height);
 
 		this.gameLines = {
-			'left': new Line(10).init(),
-			'right': new Line(self.canvas.width - 10).init()
+			'left': new Line(10).init(self.user.pseudo),
+			'right': new Line(self.canvas.width - 10).init(self.user.pseudo + '2')
 		};
 		this.wireLinesEvent();
 		this.ball = new Ball().init();
@@ -154,6 +159,10 @@ function Pong(){
 		this.context.closePath();
 	};
 
+	this.endGame = function(looser){
+		alert(this.gameLines[looser].pseudo + ' lost the game');
+	};
+
 	this.init = function(){
 		this.initUI();
 		this.initEvents();
@@ -168,6 +177,7 @@ function Pong(){
 			fromLeft: fromLeft
 		};
 		this.currentUpdate = null;
+		this.pseudo = null;
 
 		this.update = function(status){
 			this.currentUpdate = status;
@@ -184,8 +194,9 @@ function Pong(){
 			self.createLine(this.pos);
 		};
 
-		this.init = function(){
+		this.init = function(pseudo){
 			self.createLine(this.pos);
+			this.pseudo = pseudo;
 			return this;
 		};
 	}
@@ -217,8 +228,10 @@ function Pong(){
 					ball.speed.x *= -1;
 				}
 			});
-			if(ball.pos.x + (ball.radius / 2) >= self.canvas.width || ball.pos.x <= (0 + (ball.radius / 2))){
-				ball.kill();
+			if(ball.pos.x + (ball.radius / 2) >= self.canvas.width){
+				ball.kill('right');
+			} else if(ball.pos.x <= (0 + (ball.radius / 2))){
+				ball.kill('left');
 			}
 			if(ball.pos.y + (ball.radius / 2) >= self.canvas.height || ball.pos.y <= (0 + (ball.radius / 2))){
 				ball.speed.y *= -1;
@@ -238,8 +251,9 @@ function Pong(){
 			self.createBall(this.pos);
 		};
 
-		this.kill = function(){
+		this.kill = function(player){
 			clearInterval(ball.refreshInterval);
+			self.endGame(player);
 		};
 
 		this.init = function(){
