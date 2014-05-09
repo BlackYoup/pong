@@ -74,7 +74,7 @@ function Pong(){
 
 		this.gameLines = {
 			'left': new Line(10).init(),
-			'right': new Line(490).init()
+			'right': new Line(self.canvas.width - 10).init()
 		};
 		this.wireLinesEvent();
 		this.ball = new Ball().init();
@@ -103,7 +103,12 @@ function Pong(){
 				obj.pos.stop += 20;
 				obj.update(status);
 			});
+		} else{
+			_.each(this.gameLines, function(obj, key){
+				obj.update();
+			});
 		}
+		this.ball.outUpdate();
 	};
 
 	this.wireLinesEvent = function(){
@@ -200,7 +205,11 @@ function Pong(){
 		};
 
 		this.update = function(){
-			self.context.clearRect(0, 0, self.canvas.width, self.canvas.height);
+			self.updateLines();
+			self.createBall(this.pos);
+		};
+
+		this.outUpdate = function(){
 			self.createBall(this.pos);
 		};
 
