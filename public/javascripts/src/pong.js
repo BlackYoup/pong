@@ -5,6 +5,8 @@ function Pong(){
 	this.canvas = null;
 	this.context = null;
 	this.ball = null;
+	this.down = false;
+	this.downInterval = null;
 
 	this.initUI = function(){
 		var LoginForm = React.createClass({
@@ -93,14 +95,14 @@ function Pong(){
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		if(status === 'up'){
 			_.each(this.gameLines, function(obj, key){
-				obj.pos.start -= 40;
-				obj.pos.stop -= 40;
+				obj.pos.start -= 20;
+				obj.pos.stop -= 20;
 				obj.update(status);
 			});
 		} else if(status === 'down'){
 			_.each(this.gameLines, function(obj, key){
-				obj.pos.start += 40;
-				obj.pos.stop += 40;
+				obj.pos.start += 20;
+				obj.pos.stop += 20;
 				obj.update(status);
 			});
 		} else{
@@ -113,11 +115,25 @@ function Pong(){
 
 	this.wireLinesEvent = function(){
 		Bacon.fromEventTarget(document, 'keydown').onValue(function(e){
-			if(e.keyCode === 40){
-				self.updateLines('down');
-			} else if(e.keyCode === 38){
-				self.updateLines('up');
+			if(self.down){
+				return;
 			}
+			self.down = true;
+			self.downInterval = setInterval(function(){
+				if(e.keyCode === 40){
+					self.updateLines('down');
+				} else if(e.keyCode === 38){
+					self.updateLines('up');
+				}
+			}, 50);
+		});
+		Bacon.fromEventTarget(document, 'keyup').onValue(function(e){
+			if(!self.down){
+				return;
+			}
+			self.down = false;
+			clearInterval(self.downInterval);
+			self.downInterval = null;
 		});
 	};
 
