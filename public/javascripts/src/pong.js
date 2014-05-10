@@ -8,15 +8,19 @@ function Pong(){
 	this.down = false;
 	this.downInterval = null;
 	this.user = {
-		pseudo: null
+		pseudo: null,
+		roomName: null,
+		ennemyID: null
 	};
+	this.xValue = null;
 
 	this.initUI = function(){
 		var LoginForm = React.createClass({
 			render: function(){
 				return (
 					<div>
-						<input type="text" id="username" />
+						<label for="username">{"UserName"}</label>{" : "}<input type="text" id="username" /><br />
+						<label for="roomName">{"Room Name"}</label>{" : "}<input type="text" id="roomName" /><br />
 						<input type="submit" id="submitAuth" />
 					</div>
 				);
@@ -27,15 +31,18 @@ function Pong(){
 	};
 
 	this.initEvents = function(){
-		var usernameInput = $('#username');
-		var validate = usernameInput.asEventStream('keydown').filter(function(e){
+		var usernameInput = $('#username'),
+			roomName = $('#roomName');
+		var bothInputs = usernameInput.asEventStream('keydown').merge(roomName.asEventStream('keydown')),
+		validate = bothInputs.filter(function(e){
 			return e.keyCode === 13;
 		}).merge($('#submitAuth').asEventStream('click')).filter(function(){
-			return usernameInput.val().trim().length > 0;
+			return usernameInput.val().trim().length > 0 && roomName.val().trim().length > 0;
 		});
 
 		validate.onValue(function(){
-			self.registerUser(usernameInput.val()).chain(function(pseudo){
+			self.registerUser(usernameInput.val()).chain(function(){
+				self.user.roomName = roomName.val().trim();
 				self.initGameUI();
 				initChat();
 			});
@@ -49,7 +56,7 @@ function Pong(){
 		return Promise.of();
 	};
 
-	this.initGameUI = function(pseudo){
+	this.initGameUI = function(){
 		var GamePlateform = React.createClass({
 			render: function(){
 				return (
@@ -66,6 +73,7 @@ function Pong(){
 		$('#chat, #pong').css('display', 'block');
 		$('#login').css('display', 'none');
 		this.initCanvas();
+		socket.joinGame(this.user.roomName);
 	};
 
 	this.initCanvas = function(){
@@ -84,7 +92,11 @@ function Pong(){
 			'right': new Line(self.canvas.width - 10).init(self.user.pseudo + '2')
 		};
 		this.wireLinesEvent();
-		this.ball = new Ball().init();
+	};
+
+	this.initBall = function(){
+		console.log(this.xValue);
+		this.ball = new Ball().init(self.xValue);
 	};
 
 	this.createLine = function(pos){
@@ -99,23 +111,25 @@ function Pong(){
 	this.updateLines = function(status){
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		if(status === 'up'){
-			_.each(this.gameLines, function(obj, key){
-				obj.pos.start -= 20;
-				obj.pos.stop -= 20;
-				obj.update(status);
-			});
+			var obj = this.gameLines['left'];
+			obj.pos.start -= 20;
+			obj.pos.stop -= 20;
+			obj.update(status);
 		} else if(status === 'down'){
-			_.each(this.gameLines, function(obj, key){
-				obj.pos.start += 20;
-				obj.pos.stop += 20;
-				obj.update(status);
-			});
+			var obj = this.gameLines['left'];
+			obj.pos.start += 20;
+			obj.pos.stop += 20;
+			obj.update(status);
 		} else{
 			_.each(this.gameLines, function(obj, key){
 				obj.update();
 			});
 		}
 		this.ball.outUpdate();
+		if(status){
+			this.gameLines['right'].update();
+			socket.updateLine(this.gameLines['left'].pos);
+		}
 	};
 
 	this.wireLinesEvent = function(){
@@ -159,11 +173,27 @@ function Pong(){
 		this.context.closePath();
 	};
 
+	this.updateEnnemyLine = function(pos){
+		this.gameLines['right'].pos.start = pos.start;
+		this.gameLines['right'].pos.stop = pos.stop;
+		this.updateLines();
+	};
+
 	this.endGame = function(looser){
-		alert(this.gameLines[looser].pseudo + ' lost the game');
-		if(confirm('Play again ?')){
-			self.initGameUI();
+		var looserID = null;
+		if(looser === 'right'){
+			looserID = this.user.ennemyID;
+		} else{
+			looserID =  null;
 		}
+		socket.endGame(looserID);
+		/*if(confirm('Play again ?')){
+			self.initGameUI();
+		}*/
+	};
+
+	this.announceLooser = function(pseudo){
+		alert(pseudo + ' lost the game');
 	};
 
 	this.init = function(){
@@ -204,7 +234,7 @@ function Pong(){
 		};
 	}
 
-	function Ball(){
+	function Ball(xValue){
 		var ball = this;
 		this.radius = 5;
 		this.pos = {
@@ -217,6 +247,8 @@ function Pong(){
 			x: -7,
 			y: -7
 		};
+
+		console.log(this.speed);
 
 		this.startAnimate = function(){
 			this.refreshInterval = setInterval(ball.animate, 1000/40)
@@ -259,7 +291,8 @@ function Pong(){
 			self.endGame(player);
 		};
 
-		this.init = function(){
+		this.init = function(xValue){
+			this.speed.x *= xValue;
 			self.createBall(this.pos);
 			this.startAnimate();
 			return this;
@@ -267,9 +300,10 @@ function Pong(){
 	}
 }
 $(document).ready(function(){
-	var pong = new Pong().init();
-	setTimeout(function(){
+	window.pong = new Pong().init();
+	/*setTimeout(function(){
 		$('#username').val('test');
+		$('#roomName').val('yolo');
 		$('#submitAuth').click();
-	}, 100);
+	}, 100);*/
 });

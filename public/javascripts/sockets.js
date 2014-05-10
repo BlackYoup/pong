@@ -22,7 +22,7 @@ $(document).ready(function(){
 		};
 
 		this.connect = function(){
-			this.socket = io.connect('http://127.0.0.1:3000');
+			this.socket = io.connect(window.location);
 			return this;
 		};
 
@@ -36,6 +36,25 @@ $(document).ready(function(){
 			this.socket.on('chat_leave', function(message){
 				self.onChatMessage(message);
 			});
+			this.socket.on('gameJoined', function(ennemyID){
+				window.pong.user.ennemyID = ennemyID;
+				self.socket.emit('meetOther', ennemyID);
+			});
+			this.socket.on('xValue', function(xValue){
+				pong.xValue = xValue;
+			});
+			this.socket.on('readyToPlay', function(){
+				self.socket.emit('readyToPlay');
+			});
+			this.socket.on('play', function(){
+				pong.initBall();
+			});
+			this.socket.on('updateLine', function(pos){
+				pong.updateEnnemyLine(pos);
+			});
+			this.socket.on('looseris', function(pseudo){
+				pong.announceLooser(pseudo);
+			});
 			return this;
 		};
 
@@ -43,6 +62,21 @@ $(document).ready(function(){
 			if(this.user.pseudo){
 				this.joinChat();
 			}
+		};
+
+		this.joinGame = function(roomName){
+			this.socket.emit('joinGame', roomName);
+		};
+
+		this.updateLine = function(pos){
+			this.socket.emit('updateLine', {
+				start: pos.start,
+				stop: pos.stop
+			});
+		};
+
+		this.endGame = function(looserID){
+			this.socket.emit('endGame', looserID);
 		};
 
 		this.init = function(){
