@@ -9,10 +9,10 @@ function Pong(){
 	this.downInterval = null;
 	this.user = {
 		pseudo: null,
-		roomName: null,
-		ennemyID: null
+		roomName: null
 	};
 	this.xValue = null;
+	this.updateScores = null;
 
 	this.initUI = function(){
 		var LoginForm = React.createClass({
@@ -50,13 +50,43 @@ function Pong(){
 	};
 
 	this.registerUser = function(val){
-		val = val.trim();
-		socket.user.pseudo = val;
-		this.user.pseudo = val;
+		this.user.pseudo = val.trim();
 		return Promise.of();
 	};
 
-	this.initGameUI = function(){
+	this.initGameUI = function(gameInfos){
+		var Results = React.createClass({
+			getInitialState: function(){
+				return {
+					left: {
+						pseudo: null,
+						score: null
+					},
+					right: {
+						pseudo: null,
+						score: null
+					}
+				};
+			},
+			componentDidMount: function(){
+				var scores = this;
+				self.updateScores = function(scores){
+					scores.setState(scores);
+				};
+			},
+			render: function(){
+				return (
+					<div className="results">
+						<div classNam="results__left">
+							{this.state['left'].pseudo + ' ' + this.state['left'].score}
+						</div>
+						<div className="results__right">
+							{this.state['right'].pseudo + ' ' + this.state['right'].score}
+						</div>
+					</div>
+				);
+			}
+		});
 		var GamePlateform = React.createClass({
 			render: function(){
 				return (
@@ -65,6 +95,7 @@ function Pong(){
 							{ "Your browser don't support canvas, please chose one from : "}
 							<a href="http://browsehappy.com/">"http://browsehappy.com/"</a>
 						</canvas>
+						<Results />
 					</div>
 				);
 			}
@@ -182,14 +213,11 @@ function Pong(){
 		this.updateLines();
 	};
 
-	this.endGame = function(looser){
-		var looserID = null;
-		if(looser === 'right'){
-			looserID = this.user.ennemyID;
-		} else{
-			looserID =  null;
-		}
-		socket.endGame(looserID);
+	this.endGame = function(){
+		this.playAgain();
+	};
+
+	this.playAgain = function(){
 		if(confirm('Play again ?')){
 			socket.playAgain(true);
 		} else{
@@ -268,10 +296,8 @@ function Pong(){
 					ball.speed.x *= -1;
 				}
 			});
-			if(ball.pos.x + (ball.radius / 2) >= self.canvas.width){
-				ball.kill('right');
-			} else if(ball.pos.x <= (0 + (ball.radius / 2))){
-				ball.kill('left');
+			if(ball.pos.x <= (0 + (ball.radius / 2))){
+				ball.kill();
 			}
 			if(ball.pos.y + (ball.radius / 2) >= self.canvas.height || ball.pos.y <= (0 + (ball.radius / 2))){
 				ball.speed.y *= -1;
@@ -293,7 +319,7 @@ function Pong(){
 
 		this.kill = function(player){
 			clearInterval(ball.refreshInterval);
-			self.endGame(player);
+			socket.endGame();
 		};
 
 		this.init = function(xValue){

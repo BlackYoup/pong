@@ -3,9 +3,6 @@ $(document).ready(function(){
 		var self = this;
 		this.socket = null;
 		this.onChatMessage = null;
-		this.user = {
-			pseudo: null
-		};
 
 		this.emit = function(message){
 			if(typeof message === 'string'){
@@ -29,10 +26,6 @@ $(document).ready(function(){
 			this.socket.on('chat_leave', function(message){
 				self.onChatMessage(message);
 			});
-			this.socket.on('gameJoined', function(ennemyID){
-				window.pong.user.ennemyID = ennemyID;
-				self.socket.emit('meetOther', ennemyID);
-			});
 			this.socket.on('xValue', function(xValue){
 				pong.xValue = xValue;
 			});
@@ -42,22 +35,23 @@ $(document).ready(function(){
 			this.socket.on('play', function(){
 				pong.initBall();
 			});
+			this.socket.on('end', function(looserPseudo){
+				pong.announceLooser(looserPseudo);
+				pong.endGame();
+			});
 			this.socket.on('updateLine', function(pos){
 				pong.updateEnnemyLine(pos);
 			});
-			this.socket.on('looseris', function(pseudo){
-				pong.announceLooser(pseudo);
-			});
-			this.socket.on('playAgain', function(again){
-				if(again){
-					pong.initGameUI();
+			this.socket.on('playAgain', function(infos){
+				if(infos.playAgain){
+					pong.initGameUI(infos.gameInfos);
 				}
 			});
 			return this;
 		};
 
-		this.joinGame = function(roomName){
-			this.socket.emit('joinGame', roomName);
+		this.joinGame = function(infos){
+			this.socket.emit('joinGame', infos);
 		};
 
 		this.updateLine = function(pos){
@@ -67,8 +61,8 @@ $(document).ready(function(){
 			});
 		};
 
-		this.endGame = function(looserID){
-			this.socket.emit('endGame', looserID);
+		this.endGame = function(){
+			this.socket.emit('endGame');
 		};
 
 		this.playAgain = function(again){
