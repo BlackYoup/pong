@@ -187,9 +187,11 @@ function Pong(){
 			looserID =  null;
 		}
 		socket.endGame(looserID);
-		/*if(confirm('Play again ?')){
-			self.initGameUI();
-		}*/
+		if(confirm('Play again ?')){
+			socket.playAgain(true);
+		} else{
+			socket.playAgain(false);
+		}
 	};
 
 	this.announceLooser = function(pseudo){

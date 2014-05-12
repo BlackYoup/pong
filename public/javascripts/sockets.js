@@ -55,6 +55,11 @@ $(document).ready(function(){
 			this.socket.on('looseris', function(pseudo){
 				pong.announceLooser(pseudo);
 			});
+			this.socket.on('playAgain', function(again){
+				if(again){
+					pong.initGameUI();
+				}
+			});
 			return this;
 		};
 
@@ -77,6 +82,10 @@ $(document).ready(function(){
 
 		this.endGame = function(looserID){
 			this.socket.emit('endGame', looserID);
+		};
+
+		this.playAgain = function(again){
+			this.socket.emit('playAgain', again);
 		};
 
 		this.init = function(){
