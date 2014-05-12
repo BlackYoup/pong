@@ -14,13 +14,6 @@ $(document).ready(function(){
 			this.socket.emit('chat_message', message);
 		};
 
-		this.joinChat = function(){
-			this.socket.emit('join_chat', {
-				pseudo: self.user.pseudo
-			});
-			return this;
-		};
-
 		this.connect = function(){
 			this.socket = io.connect(window.location);
 			return this;
@@ -61,12 +54,6 @@ $(document).ready(function(){
 				}
 			});
 			return this;
-		};
-
-		this.registerMe = function(){
-			if(this.user.pseudo){
-				this.joinChat();
-			}
 		};
 
 		this.joinGame = function(roomName){

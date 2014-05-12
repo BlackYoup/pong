@@ -73,7 +73,10 @@ function Pong(){
 		$('#chat, #pong').css('display', 'block');
 		$('#login').css('display', 'none');
 		this.initCanvas();
-		socket.joinGame(this.user.roomName);
+		socket.joinGame({
+			room: self.user.roomName,
+			pseudo: self.user.pseudo
+		});
 	};
 
 	this.initCanvas = function(){

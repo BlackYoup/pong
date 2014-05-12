@@ -18,7 +18,6 @@ function initChat(){
 	socket.onChatMessage = function(message){
 		Chat.newMessage(message.pseudo, message.message);
 	};
-	socket.registerMe();
 }
 
 function chatUI(){
