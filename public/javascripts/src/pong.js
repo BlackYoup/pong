@@ -54,34 +54,38 @@ function Pong(){
 		return Promise.of();
 	};
 
-	this.initGameUI = function(gameInfos){
+	this.initGameUI = function(){
 		var Results = React.createClass({
 			getInitialState: function(){
 				return {
 					left: {
-						pseudo: null,
+						user: {
+							pseudo: null
+						},
 						score: null
 					},
 					right: {
-						pseudo: null,
+						user: {
+							pseudo: null
+						},
 						score: null
 					}
 				};
 			},
 			componentDidMount: function(){
 				var scores = this;
-				self.updateScores = function(scores){
-					scores.setState(scores);
+				self.updateScores = function(gameInfos){
+					scores.setState(gameInfos);
 				};
 			},
 			render: function(){
 				return (
 					<div className="results">
 						<div classNam="results__left">
-							{this.state['left'].pseudo + ' ' + this.state['left'].score}
+							{this.state['left'].user.pseudo + ' ' + this.state['left'].score}
 						</div>
 						<div className="results__right">
-							{this.state['right'].pseudo + ' ' + this.state['right'].score}
+							{this.state['right'].user.pseudo + ' ' + this.state['right'].score}
 						</div>
 					</div>
 				);
@@ -110,7 +114,18 @@ function Pong(){
 		});
 	};
 
+	this.clearCanvasProps = function(){
+		if(this.canvas){
+			this.context.clearRect(0, 0, self.canvas.width, self.canvas.height); // clean there because we'll lost focus on the old canvas object
+		}
+		this.canvas = null;
+		this.context = null;
+		this.gameLines = null;
+		this.ball = null;
+	};
+
 	this.initCanvas = function(){
+		this.clearCanvasProps();
 		this.canvas = document.getElementById('pongCanvas');
 		if(!this.canvas){
 			alert('Can\'t get the canvas');
@@ -129,7 +144,6 @@ function Pong(){
 	};
 
 	this.initBall = function(){
-		console.log(this.xValue);
 		this.ball = new Ball().init(self.xValue);
 	};
 
@@ -281,8 +295,6 @@ function Pong(){
 			y: -7
 		};
 
-		console.log(this.speed);
-
 		this.startAnimate = function(){
 			this.refreshInterval = setInterval(ball.animate, 1000/40)
 		};
@@ -332,9 +344,4 @@ function Pong(){
 }
 $(document).ready(function(){
 	window.pong = new Pong().init();
-	/*setTimeout(function(){
-		$('#username').val('test');
-		$('#roomName').val('yolo');
-		$('#submitAuth').click();
-	}, 100);*/
 });

@@ -44,8 +44,12 @@ $(document).ready(function(){
 			});
 			this.socket.on('playAgain', function(infos){
 				if(infos.playAgain){
-					pong.initGameUI(infos.gameInfos);
+					pong.updateScores(infos.gameInfos);
 				}
+			});
+			this.socket.on('updateScoresInfos', function(infos){
+				pong.updateScores(infos);
+				pong.initCanvas();
 			});
 			return this;
 		};
