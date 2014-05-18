@@ -59,16 +59,16 @@ function Pong(){
 			getInitialState: function(){
 				return {
 					left: {
-						user: {
-							pseudo: null
-						},
-						score: null
+						pseudo: null
 					},
 					right: {
-						user: {
-							pseudo: null
-						},
-						score: null
+						pseudo: null
+					},
+					gameInfos: {
+						scores: {
+							left: 0,
+							right: 0
+						}
 					}
 				};
 			},
@@ -82,10 +82,10 @@ function Pong(){
 				return (
 					<div className="results">
 						<div classNam="results__left">
-							{this.state['left'].user.pseudo + ' ' + this.state['left'].score}
+							{this.state.left.pseudo + ' ' + this.state.gameInfos.scores.left}
 						</div>
 						<div className="results__right">
-							{this.state['right'].user.pseudo + ' ' + this.state['right'].score}
+							{this.state.right.pseudo + ' ' + this.state.gameInfos.scores.right}
 						</div>
 					</div>
 				);

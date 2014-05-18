@@ -29,7 +29,8 @@ $(document).ready(function(){
 			this.socket.on('xValue', function(xValue){
 				pong.xValue = xValue;
 			});
-			this.socket.on('readyToPlay', function(){
+			this.socket.on('readyToPlay', function(gameInfos){
+				pong.updateScores(gameInfos);
 				self.socket.emit('readyToPlay');
 			});
 			this.socket.on('play', function(){
@@ -41,11 +42,6 @@ $(document).ready(function(){
 			});
 			this.socket.on('updateLine', function(pos){
 				pong.updateEnnemyLine(pos);
-			});
-			this.socket.on('playAgain', function(infos){
-				if(infos.playAgain){
-					pong.updateScores(infos.gameInfos);
-				}
 			});
 			this.socket.on('updateScoresInfos', function(infos){
 				pong.updateScores(infos);
