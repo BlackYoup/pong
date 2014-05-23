@@ -31,21 +31,30 @@ $(document).ready(function(){
 			});
 			this.socket.on('readyToPlay', function(gameInfos){
 				pong.updateScores(gameInfos);
+				pong.spawnBall();
 				self.socket.emit('readyToPlay');
 			});
 			this.socket.on('play', function(){
-				pong.initBall();
+				pong.ball.init();
 			});
 			this.socket.on('end', function(looserPseudo){
-				pong.announceLooser(looserPseudo);
-				pong.endGame();
+				pong.endGame(looserPseudo);
 			});
 			this.socket.on('updateLine', function(pos){
 				pong.updateEnnemyLine(pos);
 			});
+			this.socket.on('ballCoords', function(pos){
+				pong.ball.update(pos);
+			});
+			this.socket.on('ballInfos', function(ballInfos){
+				pong.ball.setInfos(ballInfos);
+			});
 			this.socket.on('updateScoresInfos', function(infos){
 				pong.updateScores(infos);
 				pong.initCanvas();
+			});
+			this.socket.on('initPaddlePos', function(data){
+				pong.setPaddlePos(data);
 			});
 			return this;
 		};
@@ -54,11 +63,8 @@ $(document).ready(function(){
 			this.socket.emit('joinGame', infos);
 		};
 
-		this.updateLine = function(pos){
-			this.socket.emit('updateLine', {
-				start: pos.start,
-				stop: pos.stop
-			});
+		this.updateLine = function(status){
+			this.socket.emit('updateLine', status);
 		};
 
 		this.endGame = function(){

@@ -143,8 +143,8 @@ function Pong(){
 		this.wireLinesEvent();
 	};
 
-	this.initBall = function(){
-		this.ball = new Ball().init(self.xValue);
+	this.spawnBall = function(){
+		this.ball = new Ball();
 	};
 
 	this.createLine = function(pos){
@@ -173,10 +173,12 @@ function Pong(){
 				obj.update();
 			});
 		}
-		this.ball.outUpdate();
-		if(status){
+		if(this.ball){
+			this.ball.outUpdate();
+		}
+		if(status && (status === 'up' || status === 'down')){
 			this.gameLines['right'].update();
-			socket.updateLine(this.gameLines['left'].pos);
+			socket.updateLine(status);
 		}
 	};
 
@@ -205,6 +207,9 @@ function Pong(){
 	};
 
 	this.updateChecks = function(obj){
+		if(!obj.pos){
+			return;
+		}
 		if(obj.pos.start < 0){
 			return false;
 		} else if(obj.pos.stop > this.canvas.height){
@@ -214,20 +219,14 @@ function Pong(){
 		}
 	};
 
-	this.createBall = function(pos){
-		this.context.beginPath();
-		this.context.arc(pos.x, pos.y, pos.radius, 0, Math.PI*2);
-		this.context.fill();
-		this.context.closePath();
-	};
-
 	this.updateEnnemyLine = function(pos){
 		this.gameLines['right'].pos.start = pos.start;
 		this.gameLines['right'].pos.stop = pos.stop;
 		this.updateLines();
 	};
 
-	this.endGame = function(){
+	this.endGame = function(looserPseudo){
+		this.announceLooser(looserPseudo);
 		this.playAgain();
 	};
 
@@ -242,6 +241,14 @@ function Pong(){
 	this.announceLooser = function(pseudo){
 		alert(pseudo + ' lost the game');
 	};
+	
+	this.setPaddlePos = function(data){
+		_.each(data, function(paddle){
+			if(paddle){
+				self.gameLines[paddle.paddle].initPaddlePos(paddle.pos);
+			}
+		});
+	};
 
 	this.init = function(){
 		this.initUI();
@@ -249,13 +256,9 @@ function Pong(){
 		return this;
 	};
 
-	function Line(fromLeft){
+	function Line(){
 		this.lineHeight = 100;
-		this.pos = {
-			start: (self.canvas.height / 2) - (this.lineHeight / 2),
-			stop: (self.canvas.height / 2) - (this.lineHeight / 2) + this.lineHeight,
-			fromLeft: fromLeft
-		};
+		this.pos = null;
 		this.currentUpdate = null;
 		this.pseudo = null;
 
@@ -271,11 +274,17 @@ function Pong(){
 				}
 				this.currentUpdate = null;
 			}
+			if(this.pos){
+				self.createLine(this.pos);
+			}
+		};
+		
+		this.initPaddlePos = function(pos){
+			this.pos = pos;
 			self.createLine(this.pos);
 		};
 
 		this.init = function(pseudo){
-			self.createLine(this.pos);
 			this.pseudo = pseudo;
 			return this;
 		};
@@ -283,61 +292,42 @@ function Pong(){
 
 	function Ball(xValue){
 		var ball = this;
-		this.radius = 5;
 		this.pos = {
-			x: (self.canvas.width / 2),
-			y: (self.canvas.height / 2),
-			radius: this.radius
+			x: null,
+			y: null
 		};
-		this.refreshInterval = null;
-		this.speed = {
-			x: -7,
-			y: -7
-		};
+		this.radius = null;
 
-		this.startAnimate = function(){
-			this.refreshInterval = setInterval(ball.animate, 1000/40)
-		};
-
-		this.animate = function(){
-			var barsPositions = _.map(self.gameLines, function(obj){
-				return obj.pos;
-			});
-			_.each(barsPositions, function(obj){
-				if(ball.pos.y >= obj.start && ball.pos.y <= obj.stop && ball.pos.x < (obj.fromLeft + 5) && ball.pos.x > (obj.fromLeft - 5)){
-					ball.speed.x *= -1;
-				}
-			});
-			if(ball.pos.x <= (0 + (ball.radius / 2))){
-				ball.kill();
-			}
-			if(ball.pos.y + (ball.radius / 2) >= self.canvas.height || ball.pos.y <= (0 + (ball.radius / 2))){
-				ball.speed.y *= -1;
-			}
-
-			ball.pos.x += ball.speed.x;
-			ball.pos.y += ball.speed.y;
-			ball.update();
-		};
-
-		this.update = function(){
+		this.update = function(pos){
+			this.pos = pos;
 			self.updateLines();
-			self.createBall(this.pos);
+			this.createBall();
 		};
 
 		this.outUpdate = function(){
-			self.createBall(this.pos);
+			this.createBall();
 		};
 
 		this.kill = function(player){
 			clearInterval(ball.refreshInterval);
 			socket.endGame();
 		};
+		
+		this.setInfos = function(infos){
+			this.pos.x = infos.pos.x;
+			this.pos.y = infos.pos.y;
+			this.radius = infos.radius;
+		};
+		
+		this.createBall = function(){
+			self.context.beginPath();
+			self.context.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI*2);
+			self.context.fill();
+			self.context.closePath();
+		};
 
-		this.init = function(xValue){
-			this.speed.x *= xValue;
-			self.createBall(this.pos);
-			this.startAnimate();
+		this.init = function(){
+			this.createBall();
 			return this;
 		};
 	}
